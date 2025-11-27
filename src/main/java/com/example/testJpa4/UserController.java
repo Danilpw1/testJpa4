@@ -1,7 +1,9 @@
 package com.example.testJpa4;
 
+import com.example.testJpa4.entity.Order;
 import com.example.testJpa4.entity.User;
 
+import com.example.testJpa4.repository.OrderRepository;
 import com.example.testJpa4.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +16,8 @@ public class UserController {
 
     @Autowired  // Spring автоматически предоставит repository
     private UserRepository userRepository;
+    @Autowired
+    private OrderRepository orderRepository;
 
     // GET /api/users — получить всех пользователей
     @GetMapping
@@ -49,4 +53,24 @@ public class UserController {
     public void deleteUser(@PathVariable Long id) {
         userRepository.deleteById(id);
     }
+
+    // GET /api/users/1/orders — получить все заказы пользователя 1
+    @GetMapping("/{id}/orsers")
+    public List<Order> getUserOrders(@PathVariable Long id){
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return user.getOrders();
+    }
+
+    // POST /api/users/1/orders — добавить заказ пользователю 1
+    @PostMapping("{id}/orders")
+    public Order createUserOrder(@PathVariable Long id,@RequestBody Order order){
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        order.setUser(user);
+        return orderRepository.save(order);
+
+    }
+
+
 }
